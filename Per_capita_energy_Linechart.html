@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Line Chart</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        .line {
+            fill: none;
+            stroke-width: 2px;
+        }
+
+        .dot {
+            fill: #fff;
+            stroke: steelblue;
+            stroke-width: 1.5px;
+        }
+
+        .legend {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+        }
+
+        .legend rect {
+            stroke-width: 1;
+        }
+
+        .legend text {
+            fill: #000;
+            font-weight: bold;
+        }
+
+        .tooltip {
+            position: absolute;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 6px 8px;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        .header {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            font-size: 24px;
+            color: #333;
+            transition: color 0.3s ease;
+            cursor: pointer;
+            font-weight: 600;
+            background-image: linear-gradient(to right, #553c9a 45%, #ee4b2b);
+            color: transparent;
+            background-clip: text;
+            -webkit-background-clip: text;
+        }
+
+        .header:hover {
+            color: #a16f17c7; 
+        }
+
+        .paragraph {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            color: #555;
+            line-height: 1.6;
+            font-weight: 600;
+            background-image: linear-gradient(to right, #553c9a 45%, #ee4b2b);
+            color: transparent;
+            background-clip: text;
+            -webkit-background-clip: text;
+            margin-bottom: 50px;
+        }
+        .paragraph:hover {
+            color: #333;
+        }
+        
+    </style>
+    <link href="style.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="header" style="margin-bottom: 10px;">Energy Consumption per Capita</div>
+    
+    <div class="paragraph">
+        Energy consumption per person is measured in kilowatt-hours per capita (kWh/person).
+    </div>
+    <div>
+        <select id="file-select">
+            <option value="Per_capita_energy_Linechart.html">LineChart of per capita consumption of few countries</option>   
+            <option value="Map_visual_percapita_Engy_Index_2.html">per capita consumption</option>
+            <option value="Renew_linechart.html">LineChart of Renewable consumption of few countries</option>
+            <option value="Renewable_Energy.html">Renewable consumption</option>  
+            <option value="Map_visual_primary_Engy_Index.html">Annual consumption</option>
+            <option value="Primary_Energy_Linechart.html">LineChart of Annual consumption of few countries</option>         
+            <option value="Fossil_fuel_stack_area.html">Fossil fuel Consumption</option>   
+            <option value="./index.html">Home</option>
+        </select>
+    </div>
+
+    <div id="chart-container" style="position: relative;">
+        <svg id="chart"></svg>
+        <div class="tooltip"></div>
+    </div>
+    
+    <script>
+        document.getElementById('file-select').addEventListener('change', function() {
+            var selectedFile = this.value;
+            window.location.href = selectedFile;
+        });
+        d3.csv("./per-capita-energy-use.csv").then(function(data) {
+            const filteredData = data.filter(d => ["China", "United States", "India", "Brazil", "United Kingdom", "South Africa"].includes(d.Entity));
+
+            filteredData.forEach(function(d) {
+                d.Year = +d.Year;
+                d.Primary_energy_consumption_per_capita = +d["Primary energy consumption per capita (kWh/person)"];
+            });
+
+            drawLineChart(filteredData);
+        });
+
+        function drawLineChart(data) {
+            const width = 800;
+            const height = 400;
+            const margin = { top: 20, right: 20, bottom: 50, left: 350 };
+
+            const svg = d3.select("#chart")
+                .attr("width", width + margin.left + margin.right+150)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            const x = d3.scaleLinear()
+                .domain(d3.extent(data, d => d.Year))
+                .range([0, width]);
+
+            const y = d3.scaleLinear()
+                .domain([0, d3.max(data, d => d.Primary_energy_consumption_per_capita)])
+                .range([height, 0]);
+
+            const line = d3.line()
+                .x(d => x(d.Year))
+                .y(d => y(d.Primary_energy_consumption_per_capita));
+
+            const countries = ["China", "United States", "India", "Brazil", "United Kingdom", "South Africa"];
+            countries.forEach(country => {
+                const countryData = data.filter(d => d.Entity === country);
+                
+                svg.append("path")
+                    .datum(countryData)
+                    .attr("class", "line")
+                    .attr("d", line)
+                    .style("stroke", () => {
+                        return d3.schemeCategory10[countries.indexOf(country)];
+                    });
+                
+                // Draw dots
+                svg.selectAll(".dot-" + country)
+                    .data(countryData)
+                    .enter().append("circle")
+                    .attr("class", "dot")
+                    .attr("cx", d => x(d.Year))
+                    .attr("cy", d => y(d.Primary_energy_consumption_per_capita))
+                    .attr("r", 3)
+                    .style("fill", () => {
+                        return d3.schemeCategory10[countries.indexOf(country)];
+                    })
+                    .on("mouseover", function(event, d) {
+                        d3.select(this).attr("r", 5); 
+                        const mouseX = d3.pointer(event)[0];
+                        const mouseY = d3.pointer(event)[1];
+                        const year = Math.round(x.invert(mouseX));
+                        const value =  d.Primary_energy_consumption_per_capita; 
+                        d3.select(".tooltip")
+                            .style("opacity", 0.9)
+                            .html(country + "<br>" +"Year: " + year + "<br>" + "Consumption: " + value.toFixed(2) + " kWh/person")
+                            .style("left", (event.pageX + 10) + "px")
+                            .style("top", (event.pageY - 20) + "px");
+                    })
+                    .on("mouseout", function(event, d) {
+                        d3.select(this).attr("r", 3); 
+                        d3.select(".tooltip").style("opacity", 0);
+                    });
+            });
+
+            // Adding axes
+            svg.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .call(d3.axisBottom(x).tickFormat(d3.format("d")));
+
+            svg.append("g")
+                .call(d3.axisLeft(y));
+
+            // Adding legend
+            const legend = svg.append("g")
+                .attr("class", "legend")
+                .attr("transform", "translate(" + (width + margin.right) + "," + (margin.top + 10) + ")"); 
+
+            countries.forEach((country, i) => {
+                legend.append("rect")
+                    .attr("x", 0)
+                    .attr("y", i * 20)
+                    .attr("width", 10)
+                    .attr("height", 10)
+                    .attr("fill", d3.schemeCategory10[i]);
+
+                legend.append("text")
+                    .attr("x", 20)
+                    .attr("y", i * 20 + 8)
+                    .text(country);
+            });
+        }
+    </script>
+</body>
+</html>

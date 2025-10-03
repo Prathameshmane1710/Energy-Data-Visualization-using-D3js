@@ -1,0 +1,56 @@
+#Code Execution Guide
+
+This directory contains various data and HTML files for visualizing energy consumption data using CSV, JSON, and web technologies. This guide will help you understand how to use and interpret each file.
+
+## HTML Files
+These HTML files are designed to visualize different types of energy consumption. Ensure your web browser can access the required files:
+
+1. Fossil_fuel_stack_area.html
+   - Visualizes data related to fossil fuel consumption in an area chart.
+
+2. Map_visual_percapita_Engy_Index_2.html
+   - Displays a per capita energy consumption index using a map visualization.
+
+3. Map_visual_primary_Engy_Index.html
+   - Maps primary energy index data.
+
+4. Per_capita_energy_Linechart.html
+   - Displays a line chart of per capita energy consumption.
+
+5. Primary_Energy_Linechart.html
+   - Visualizes the consumption trends for primary energy sources.
+
+6. Renewable_Energy.html
+   - Illustrates renewable energy data.
+
+7. Renew_linechart.html
+   - Displays renewable energy trends in a line chart.
+
+### Running the HTML Files
+- All data files required by the HTML visualizations are retrieved from GitHub online, so no changes are needed to the file paths in the code.
+- Open the HTML files directly in a web browser that supports JavaScript and HTML5.
+
+-After opening one of the visualizations, you can conveniently switch between different charts using the dropdown menu provided. This feature allows you to seamlessly explore various aspects of the energy data, making comparisons and discovering insights more efficient and user-friendly.
+
+## Data Files
+1. CSV Files
+   - `global-fossil-fuel-consumption.csv`
+   - `per-capita-energy-use.csv`
+   - `primary-energy-cons.csv`
+   - `renewable-share-energy.csv`
+
+   These CSV files contain the raw data used in the HTML visualizations. They include information on global fossil fuel consumption, per capita energy use, primary energy, and renewable energy.
+
+2. JSON Files
+   - `world_map.json`
+
+   This file contains geographic information required to render the map visualizations.
+
+### Working with Data Files
+- Since the data files are fetched from GitHub, they will be automatically available to the HTML files.
+
+## Troubleshooting
+- Missing Data: Ensure you have an internet connection to access the necessary data files from GitHub.
+- Unsupported Browser: Use the latest version of your preferred browser.
+
+My GitHub profile Link -:  https://github.com/Prathameshmane1710/html-portfolio

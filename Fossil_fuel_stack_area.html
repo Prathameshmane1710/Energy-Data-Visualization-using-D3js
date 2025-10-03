@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fossil Fuel Consumption</title>
+    <style>
+        #chart{
+            width: 1000px;
+            margin: auto;
+            opacity: 0;
+            transition: opacity 2s; 
+        }
+        
+        .tooltip {
+            position: absolute;
+            text-align: center;
+            width: 120px;
+            height: 48px;
+            padding: 2px;
+            font: 12px sans-serif;
+            background: lightsteelblue;
+            border: 0;
+            border-radius: 8px;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        h1{
+            text-align: center;
+            font-weight: 600;
+            background-image: linear-gradient(to left, #553c9a, #b393d3);
+            color: transparent;
+            background-clip: text;
+            -webkit-background-clip: text;
+        }
+
+        h2{
+            text-align: center;
+            font-size: 20px;
+            margin-bottom: 10px;
+            font-weight: 300;
+            background-image: linear-gradient(to left, #553c9a, #b393d3);
+            color: transparent;
+            background-clip: text;
+            -webkit-background-clip: text;
+        }
+       
+    </style>
+    <link href="style.css" rel="stylesheet" />
+</head>
+<body>
+<h1>Global fossil fuel consumption</h1>
+<h2>Measured in terawatt-hours of primary energy consumption.</h2>
+<div>
+    <select id="file-select" style="margin-bottom: 20px;">
+        <option value="Fossil_fuel_stack_area.html">Fossil fuel Consumption</option> 
+        <option value="Primary_Energy_Linechart.html">LineChart of Annual consumption of few countries</option>
+        <option value="Map_visual_primary_Engy_Index.html">Annual consumption</option>         
+        <option value="Per_capita_energy_Linechart.html">LineChart of per capita consumption of few countries</option>   
+        <option value="Map_visual_percapita_Engy_Index_2.html">per capita consumption</option>
+        <option value="Renew_linechart.html">LineChart of Renewable consumption of few countries</option>
+        <option value="Renewable_Energy.html">Renewable consumption</option>
+        <option value="./index.html">Home</option>
+    </select>
+</div>
+<div id="chart"></div>
+<script src="https://d3js.org/d3.v6.min.js"></script>
+<script>
+        document.getElementById('file-select').addEventListener('change', function() {
+        var selectedFile = this.value;
+        window.location.href = selectedFile;
+    });
+    d3.csv("./global-fossil-fuel-consumption.csv").then(function(data) {
+        const svg = d3.select("#chart").append("svg")
+            .attr("width", 1000)
+            .attr("height", 500);
+
+        const margin = {top: 20, right: 20, bottom: 30, left: 70},
+            width = +svg.attr("width") - margin.left - margin.right,
+            height = +svg.attr("height") - margin.top - margin.bottom;
+
+        const x = d3.scaleLinear().rangeRound([70, width]),
+            y = d3.scaleLinear().rangeRound([height, 0]),
+            z = d3.scaleOrdinal([ "#377eb8","brown","#4daf4a"]);  
+
+        const stack = d3.stack()
+            .keys(["Coal (TWh, direct energy)", "Oil (TWh, direct energy)", "Gas (TWh, direct energy)"]);
+        const area = d3.area()
+            .x(d => x(d.data.Year))
+            .y0(d => y(d[0]))
+            .y1(d => y(d[1]));
+
+        const tooltip = d3.select("body").append("div")
+            .attr("class", "tooltip");
+
+        data.forEach(d => {
+            d.Year = +d.Year;
+        });
+
+        const layers = stack(data);
+        x.domain(d3.extent(data, d => d.Year));
+        y.domain([0, d3.max(layers, l => d3.max(l, d => d[1]))]);
+
+        const yAxis = d3.axisLeft(y)
+            .ticks(10)
+            .tickFormat(d => {
+                if (d === 0) {
+                    return "";
+                } else {
+                    return `${d/1000}k`; 
+                }
+            });
+
+        svg.append("g")
+            .attr("class", "y-axis")
+            .attr("transform", "translate(" + margin.left + ",0)")
+            .call(yAxis);
+
+        svg.append("g")
+            .attr("class", "x-axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(x).ticks(8).tickFormat(d3.format("d")));
+
+        const layer = svg.selectAll(".layer")
+            .data(layers)
+            .enter().append("g")
+            .attr("class", "layer");
+
+            layer.append("path")
+            .attr("class", "area")
+            .attr("d", area)
+            .style("fill", d => z(d.key))
+            .on("mouseover", function(_, i) {
+                svg.selectAll(".area").style("opacity", 0.2);
+                d3.select(this).style("opacity", 1)
+                .attr("stroke","black")   
+            })
+            .on("mouseout", function() {
+                svg.selectAll(".area").style("opacity", 1);
+                tooltip.style("opacity", 0);
+            })
+            .on("mousemove", (event, d) => {   
+                const year = Math.round(x.invert(event.offsetX));
+                const fuelType = d.key.split(" ")[0];
+                const value = d.find(e => e.data.Year === year)[1] - d.find(e => e.data.Year === year)[0];
+                tooltip.html("Year: " + year + "<br>" +
+                            fuelType + ": " + value.toFixed(2)+" TWH")
+                    .style("left", (event.pageX + 10) + "px")
+                    .style("top", (event.pageY - 10) + "px")
+                    .style("opacity", 1);
+                    })
+
+            
+            const legend = svg.append("g")
+                .attr("class", "legend")
+                .attr("transform", "translate(" + (width - 100) + "," + 20 + ")");
+
+            layers.forEach((layer, i) => {
+                const legendRow = legend.append("g")
+                    .attr("transform", "translate(0, " + (i * 20) + ")");
+                legendRow.append("rect")
+                    .attr("width", 10)
+                    .attr("height", 10)
+                    .attr("fill", z(layer.key));
+                legendRow.append("text")
+                    .attr("x", -10)
+                    .attr("y", 10)
+                    .attr("text-anchor", "end")
+                    .style("text-transform", "capitalize")
+                    .text(layer.key);
+            });
+            
+        d3.select("#chart").style("opacity", 1);
+
+    }).catch(function(error) {
+        console.log(error);
+    });
+
+    setTimeout(renderChart, 4000);
+</script>
+</body>
+</html>

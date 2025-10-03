@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Energy Consumption Timeline</title>
+    <style>
+        body { 
+            margin: 0; 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            background: #f4f4f4; 
+        }
+        #slider {
+            width: 70%;
+            margin-top: 5px;
+        }
+        .tooltip {
+            position: absolute;
+            text-align: center;
+            width: 120px;
+            height: 50px;
+            padding: 2px;
+            font: 12px sans-serif;
+            background: rgb(217, 222, 228);
+            border: 0px;
+            border-radius: 8px;
+            pointer-events: none;
+            opacity: 0;
+        }
+        svg {
+            border: 1px solid #79777724;
+        }
+        .button {
+            margin-top: 2px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            padding: 10px 20px;
+            background-color: #f1760bc9;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        h1{
+            font-size: 25px;
+            margin-bottom: 5px;
+            font-weight: 600;
+            background-image: linear-gradient(to right, #553c9a 45%, #ee4b2b);
+            color: transparent;
+            background-clip: text;
+            -webkit-background-clip: text;
+
+        }
+        h2{
+            font-size: 18px;
+            margin: 0px;
+            font-weight: 600;
+            background-image: conic-gradient(#553c9a, #ee4b2b, #00c2cb);
+            color: transparent;
+            background-clip: text;
+            -webkit-background-clip: text;
+        }
+
+       
+    </style>
+    <link href="style.css" rel="stylesheet" />
+</head>
+<body>
+    <h1 id="year-display">Energy use per person, 2003</h1>
+    <h2>Measured in kilowatt-hours per person. Here, energy refers to primary energy.</h2>
+    <div>
+        <select id="file-select">
+            <option value="Map_visual_percapita_Engy_Index_2.html">per capita consumption</option>
+            <option value="Per_capita_energy_Linechart.html">LineChart of per capita consumption of few countries</option>   
+            <option value="Map_visual_primary_Engy_Index.html">Annual consumption</option>
+            <option value="Primary_Energy_Linechart.html">LineChart of Annual consumption of few countries</option> 
+            <option value="Renewable_Energy.html">Renewable consumption</option>
+            <option value="Renew_linechart.html">LineChart of Renewable consumption of few countries</option>  
+            <option value="Fossil_fuel_stack_area.html">Fossil fuel Consumption</option>   
+            <option value="./index.html">Home</option>
+        </select>
+    </div>
+    <input type="range" id="slider" min="1965" max="2022" value="2003">
+    <button id="play-button" class="button">Play time-lapse</button>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <script src="https://d3js.org/topojson.v3.min.js"></script>
+    
+    <script>
+        
+        document.getElementById('file-select').addEventListener('change', function() {
+            var selectedFile = this.value;
+            window.location.href = selectedFile;
+        });
+        
+        var width = 960, height = 500;
+        var svg = d3.select('body').append('svg')
+            .attr('width', width)
+            .attr('height', height);
+        var projection = d3.geoMercator()
+            .scale(120)
+            .translate([width / 2, height-155]);
+        var path = d3.geoPath().projection(projection);
+        var g = svg.append('g');
+        var tooltip = d3.select("body").append("div").attr("class", "tooltip");
+
+        Promise.all([
+            d3.json('./world_map.json'),
+            d3.csv('./per-capita-energy-use.csv', function(d) {
+                return {
+                    Entity: d.Entity,
+                    Year: +d.Year,
+                    Consumption: +d['Primary energy consumption per capita (kWh/person)']
+                };
+            })
+        ]).then(function(data) {
+            var geojsonData = data[0];
+            var energyData = data[1];
+
+            var colorScale = d3.scaleThreshold()
+                .domain([1000, 3000, 10000, 30000, 100000])
+                .range(["#fef0d9","#fdd49e","#fdbb84","#fc8d59","#e34a33","#b30000"]);
+
+            function updateMap(year) {
+                var filteredData = energyData.filter(d => d.Year === year || (year===2022 && d.Year === 2021));
+                var energyMap = {};
+                filteredData.forEach(function(d) {
+                    energyMap[d.Entity] = d.Consumption;
+                });
+                
+                g.selectAll(".country")
+                    .data(geojsonData.features)
+                    .join("path")
+                    .attr("class", "country")
+                    .attr("d", path)
+                    .attr("stroke","#414a4c")
+                    .attr("stroke-width",0.5)
+                    .style("fill", function(d) {
+                        return energyMap[d.properties.name] === undefined || isNaN(energyMap[d.properties.name]) ? 'url(#noDataPattern)' : colorScale(energyMap[d.properties.name]);
+                    })
+                    .on("mouseover", function(event, d) {
+                        d3.select(this)
+                            .attr("stroke-width", 3)
+                            .attr("stroke", "black"); 
+                        tooltip.transition()
+                            .duration(200)
+                            .style("opacity", .75);
+                        tooltip.html(d.properties.name + "<br/>Year: "+ year +"<br/>" + (energyMap[d.properties.name] || 0) + " kWh")
+                            .style("left", (event.pageX) + "px")
+                            .style("top", (event.pageY - 28) + "px");
+                    })
+                    .on("mouseout", function(d) {
+                        d3.select(this)
+                            .attr("stroke-width", 1) 
+                            .attr("stroke", "#414a4c");
+                        tooltip.transition()
+                            .duration(500)
+                            .style("opacity", 0);
+                    });
+            }
+
+            var slider = d3.select("#slider")
+                .on("input", function() {
+                    var year = +this.value;
+                    updateMap(year);
+                    d3.select("#year-display").text("Energy use per person, " + year)
+
+                     // Checking if time-lapse is playing
+                    if (isPlaying) {
+                        stopLapse(); // Stoping the time-lapse
+                    }
+                });
+
+            updateMap(+slider.property("value"))
+            var isPlaying = false;
+            var intervalId;
+            var currentYear = +slider.property("value");
+
+            // Function to start the time lapse
+            function startLapse() {
+                currentYear = +slider.property("value");
+                isPlaying = true;
+                intervalId = setInterval(function() {
+                    if (currentYear < 2022) {
+                        currentYear++;
+                        slider.property("value", currentYear);
+                        updateMap(currentYear);
+                        d3.select("#year-display").text("Energy use per person, " + currentYear)
+                    } else {
+                        clearInterval(intervalId);
+                        isPlaying = false;
+                    }
+                }, 190);
+            }
+            function stopLapse() {
+                clearInterval(intervalId); // Clearing the interval
+                isPlaying = false; // Updating the flag to indicate it's not playing
+            }
+            // Event listener for the play button
+            document.getElementById('play-button').addEventListener('click', function() {
+                if (!isPlaying) {
+                    startLapse();
+                }else {
+                    stopLapse();
+                }
+            });
+        });
+
+        var legendSVG = `
+    <svg width="510" height="50">
+      <!-- Define intervals and colors -->
+      <defs>
+        <!-- No Data Pattern -->
+        <pattern id="noDataPattern" patternUnits="userSpaceOnUse" width="10" height="10">
+          <line x1="0" y1="0" x2="10" y2="10" style="stroke:#333;stroke-width:0.3" />
+          <line x1="10" y1="0" x2="0" y2="10" style="stroke:#333;stroke-width:0.3" />
+        </pattern>
+      </defs>
+
+      <!-- Legend Elements -->
+      <!-- Lines for intervals -->
+      <line x1="80" y1="40" x2="80" y2="20" stroke="#333" stroke-width="0.3" />
+      <line x1="140" y1="40" x2="140" y2="30" stroke="#333" stroke-width="0.3" />
+      <line x1="200" y1="40" x2="200" y2="20" stroke="#333" stroke-width="0.3" />
+      <line x1="260" y1="40" x2="260" y2="30" stroke="#333" stroke-width="0.3" />
+      <line x1="320" y1="40" x2="320" y2="20" stroke="#333" stroke-width="0.3" />
+      <line x1="380" y1="40" x2="380" y2="30" stroke="#333" stroke-width="0.3" />
+      
+
+
+
+      <!-- Rectangles for colored bars -->
+      <rect x="20" y="35" width="40" height="10" fill="url(#noDataPattern)" stroke="#333" stroke-width="0.3" />
+      <rect x="80" y="35" width="60" height="10" fill="#fef0d9" stroke="#333" stroke-width="0.3" />
+      <rect x="140" y="35" width="60" height="10" fill="#fdd49e" stroke="#333" stroke-width="0.3" />
+      <rect x="200" y="35" width="60" height="10" fill="#fdbb84" stroke="#333" stroke-width="0.3" />
+      <rect x="260" y="35" width="60" height="10" fill="#fc8d59" stroke="#333" stroke-width="0.3" />
+      <rect x="320" y="35" width="60" height="10" fill="#e34a33" stroke="#333" stroke-width="0.3" />
+      <rect x="380" y="35" width="60" height="10" fill="#b30000" stroke="#333" stroke-width="0.3" />
+      
+
+
+      <!-- Text for intervals -->
+      <text x="20" y="29" font-size="12" fill="#111">No data</text>
+      <text x="70" y="19" font-size="12" fill="#111">0 kWh</text>
+      <text x="120" y="29" font-size="12" fill="#111">1,000 kWh</text>
+      <text x="180" y="19" font-size="12" fill="#111">3,000 kWh</text>
+      <text x="240" y="29" font-size="12" fill="#111">10,000 kWh</text>
+      <text x="300" y="19" font-size="12" fill="#111">30,000 kWh</text>
+      <text x="362" y="29" font-size="12" fill="#111">100,000 kWh</text>
+      
+
+    </svg>
+  `;
+
+</script>
+
+    <div id="legend-container"></div>
+    <script> 
+        var container = document.getElementById("legend-container");
+              
+        container.innerHTML = legendSVG;
+
+</script>
+    
+</body>
+</html>
