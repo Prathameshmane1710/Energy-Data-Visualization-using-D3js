@@ -1,56 +1,83 @@
-#Code Execution Guide
+Code Execution Guide
 
-This directory contains various data and HTML files for visualizing energy consumption data using CSV, JSON, and web technologies. This guide will help you understand how to use and interpret each file.
+This directory contains the resources necessary for visualizing global energy consumption data using HTML, CSS, JavaScript, D3.js, and data files (CSV/JSON). The guide explains the purpose of each file and how to run them effectively.
 
-## HTML Files
-These HTML files are designed to visualize different types of energy consumption. Ensure your web browser can access the required files:
+Home Page (index.html)
 
-1. Fossil_fuel_stack_area.html
-   - Visualizes data related to fossil fuel consumption in an area chart.
+The project begins with a homepage (index.html) that provides an overview of the energy visualization project.
 
-2. Map_visual_percapita_Engy_Index_2.html
-   - Displays a per capita energy consumption index using a map visualization.
+The page features a modern, responsive design with a gradient background and a centered glass-style container.
 
-3. Map_visual_primary_Engy_Index.html
-   - Maps primary energy index data.
+It introduces the project with a brief description of its goals: exploring energy data through interactive charts.
 
-4. Per_capita_energy_Linechart.html
-   - Displays a line chart of per capita energy consumption.
+A button labeled “Energy Charts Project” is provided. When clicked, it redirects the user to charts.html, where the data visualizations are hosted.
 
-5. Primary_Energy_Linechart.html
-   - Visualizes the consumption trends for primary energy sources.
+This homepage serves as the entry point for the project and ensures a user-friendly start for exploring energy insights.
 
-6. Renewable_Energy.html
-   - Illustrates renewable energy data.
+HTML Files
 
-7. Renew_linechart.html
-   - Displays renewable energy trends in a line chart.
+Each HTML file is designed to display a specific energy consumption visualization. Open them directly in a modern web browser (Chrome, Firefox, or Edge recommended).
 
-### Running the HTML Files
-- All data files required by the HTML visualizations are retrieved from GitHub online, so no changes are needed to the file paths in the code.
-- Open the HTML files directly in a web browser that supports JavaScript and HTML5.
+Fossil_fuel_stack_area.html
 
--After opening one of the visualizations, you can conveniently switch between different charts using the dropdown menu provided. This feature allows you to seamlessly explore various aspects of the energy data, making comparisons and discovering insights more efficient and user-friendly.
+Displays a stacked area chart of global fossil fuel consumption.
 
-## Data Files
-1. CSV Files
-   - `global-fossil-fuel-consumption.csv`
-   - `per-capita-energy-use.csv`
-   - `primary-energy-cons.csv`
-   - `renewable-share-energy.csv`
+Map_visual_percapita_Engy_Index_2.html
 
-   These CSV files contain the raw data used in the HTML visualizations. They include information on global fossil fuel consumption, per capita energy use, primary energy, and renewable energy.
+Provides a per capita energy consumption index using an interactive map.
 
-2. JSON Files
-   - `world_map.json`
+Map_visual_primary_Engy_Index.html
 
-   This file contains geographic information required to render the map visualizations.
+Maps global primary energy consumption indices.
 
-### Working with Data Files
-- Since the data files are fetched from GitHub, they will be automatically available to the HTML files.
+Per_capita_energy_Linechart.html
 
-## Troubleshooting
-- Missing Data: Ensure you have an internet connection to access the necessary data files from GitHub.
-- Unsupported Browser: Use the latest version of your preferred browser.
+Shows per capita energy consumption trends as a line chart.
 
-My GitHub profile Link -:  https://github.com/Prathameshmane1710/html-portfolio
+Primary_Energy_Linechart.html
+
+Visualizes annual consumption trends for primary energy sources.
+
+Renewable_Energy.html
+
+Displays data related to renewable energy adoption and usage.
+
+Renew_linechart.html
+
+Shows renewable energy consumption trends over time using a line chart.
+
+Running the HTML Visualizations
+
+All visualizations fetch their data directly from GitHub (CSV/JSON sources). No manual adjustments to file paths are required.
+
+Simply open the desired .html file in a supported browser.
+
+After launching one visualization, you can seamlessly switch between others using the dropdown menu integrated into each page.
+
+Data Files
+
+CSV Files
+
+global-fossil-fuel-consumption.csv – Global fossil fuel usage data.
+
+per-capita-energy-use.csv – Energy consumption per person across countries.
+
+primary-energy-cons.csv – Primary energy consumption trends.
+
+renewable-share-energy.csv – Share of renewable energy in total energy consumption.
+
+JSON File
+
+world_map.json – Geographic boundary data required for map-based visualizations.
+
+Working with Data Files
+
+Since all files are hosted online, they are automatically fetched when opening the HTML visualizations.
+
+Ensure you have an active internet connection to load charts properly.
+
+Troubleshooting
+
+Missing Data: If visualizations appear blank, confirm your internet connection so data can be retrieved from GitHub.
+
+Browser Compatibility: Use the latest version of Chrome, Firefox, or Edge. Some visualizations may not render correctly on outdated browsers.
