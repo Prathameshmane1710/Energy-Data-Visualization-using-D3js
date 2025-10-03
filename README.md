@@ -47,3 +47,4 @@ Troubleshooting
 •	Missing Data: If visualizations appear blank, confirm your internet connection so data can be retrieved from GitHub.
 •	Browser Compatibility: Use the latest version of Chrome, Firefox, or Edge. Some visualizations may not render correctly on outdated browsers.
 
+
