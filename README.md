@@ -1,4 +1,5 @@
 Code Execution Guide
+
 This directory contains the resources necessary for visualizing global energy consumption data using HTML, CSS, JavaScript, D3.js, and data files (CSV/JSON). The guide explains the purpose of each file and how to run them effectively.
 ________________________________________
 Home Page (index.html)
